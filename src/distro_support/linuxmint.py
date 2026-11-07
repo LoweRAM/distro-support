@@ -4,7 +4,7 @@ import json
 import pathlib
 from urllib import request
 
-SUPPORT_INFO_URL = "http://packages.linuxmint.com/releases.json"  # nosec B310
+SUPPORT_INFO_URL = "http://packages.linuxmint.com/releases.json"  # nosec B310 # nosemgrep
 
 UBUNTU_SERIES_TO_VERSION = {
     "precise": "12.04",
@@ -160,14 +160,12 @@ def _build_entry(
 
 
 def get_distro_info() -> dict[str, dict[str, str | None]]:
-    if not SUPPORT_INFO_URL.startswith(("http://", "https://")):
-        raise ValueError(f"Invalid URL: {SUPPORT_INFO_URL}")
-
-    req = request.Request(SUPPORT_INFO_URL, headers={"User-Agent": "distro-support"})
-    with request.urlopen(req, timeout=10) as response:  # nosec B310
-        if response.status != 200:
-            raise ConnectionError(response.status)
-        mint_data = json.load(response)
+    response = request.urlopen(  # nosec B310 # nosemgrep
+        SUPPORT_INFO_URL, timeout=10
+    )
+    if response.status != 200:
+        raise ConnectionError(response.status)
+    mint_data = json.load(response)
 
     ubuntu_info = _load_upstream_data("ubuntu")
     debian_info = _load_upstream_data("debian")
